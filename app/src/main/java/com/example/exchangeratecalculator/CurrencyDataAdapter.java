@@ -35,7 +35,7 @@ public class CurrencyDataAdapter extends RecyclerView.Adapter<CurrencyDataAdapte
         holder.CurrencyIcon.setImageResource(CurrencyDataList.get(position).getCurrencyIcon());
         holder.CurrencyTitle.setText(CurrencyDataList.get(position).getCurrencyTitle());
         holder.CurrencyName.setText(CurrencyDataList.get(position).getCurrencyName());
-       // holder.CurrencyRate.setText(CurrencyDataList.get(position).getCurrencyRate());
+        holder.CurrencyRate.setText(Double.toString(CurrencyDataList.get(position).getCurrencyRate()));
 
     }
 
