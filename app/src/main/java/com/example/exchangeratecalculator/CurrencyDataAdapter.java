@@ -15,11 +15,11 @@ import java.util.List;
 
 public class CurrencyDataAdapter extends RecyclerView.Adapter<CurrencyDataAdapter.CurrencyDataViewHolder> {
 
-    private List<CurrencyData> CurrencyDataList;
-    private Context context;
+    public List<CurrencyData> CurrencyDataList;
+    public Context context;
 
     public CurrencyDataAdapter(List<CurrencyData> currencyDataList, Context context) {
-        CurrencyDataList = currencyDataList;
+        this.CurrencyDataList = currencyDataList;
         this.context = context;
     }
 
@@ -38,7 +38,6 @@ public class CurrencyDataAdapter extends RecyclerView.Adapter<CurrencyDataAdapte
         holder.CurrencyRate.setText(Double.toString(CurrencyDataList.get(position).getCurrencyRate()));
 
     }
-
 
     @Override
     public int getItemCount() {
