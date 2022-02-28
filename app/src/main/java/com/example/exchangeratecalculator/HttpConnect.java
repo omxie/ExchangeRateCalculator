@@ -43,6 +43,7 @@ public class HttpConnect implements Callable<Boolean> {
             InputStream response = httpURLConnection.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(response));
 
+            //gson for json data parsing which is fetched through the endpoint
             Gson gson = new Gson();
             currencyData =  gson.fromJson(reader, CurrencyRatesData.class);
 
