@@ -15,6 +15,8 @@ import android.widget.EditText;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Callable<Boolean>> TaskList;
 
-    public boolean ValuesUpdated = false;
+    public static boolean computingRecyclerView = false;
+    public static boolean ValuesUpdated = false;
     private EditText EuroRate;
     public RecyclerView CurrencyRecycler;
     public CurrencyDataAdapter CurrencyDataAdapter;
@@ -47,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         TaskList = new ArrayList<>(50);
+
         TypedArray list = getResources().obtainTypedArray(R.array.flag_ids);
         for (int i = 0; i < list.length(); ++i) {
             int id = list.getResourceId(i, -1);
@@ -85,11 +89,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        try {
-            getData();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        //This sends an http request every 1 second, basically refreshing the data
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    Log.d(TAG, "run: INSIDE THE TIMER");
+                    getData();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 0, 1000);
+
+
 
         CurrencyRecycler = findViewById(R.id.CurrencyRecycler);
         CurrencyDataAdapter = new CurrencyDataAdapter(CurrencyDataList, MainActivity.this);
@@ -98,8 +112,21 @@ public class MainActivity extends AppCompatActivity {
         CurrencyRecycler.setItemAnimator(new DefaultItemAnimator());
         CurrencyRecycler.setAdapter(CurrencyDataAdapter);
 
+        //delay is added here to avoid a null pointer
+        //caused by the addDataToRecyclerList() method
+        //some of the fetched data wasn't fetched during the time the method was invoked.
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         //puts data into a list of type CurrencyData
         addDataToRecyclerList();
+
+        if (!CurrencyRecycler.isComputingLayout())
+            computingRecyclerView = true;
+
 
     }
 
@@ -138,11 +165,18 @@ public class MainActivity extends AppCompatActivity {
 
         List<Future<Boolean>> Futures = executorService.invokeAll(TaskList);
 
-        if(Futures.get(0).isDone())
+        //clear the task list once http get request is completed.
+        if(Futures.get(0).isDone()) {
+            TaskList.clear();
+
+            //these two lines right here is what updates the view with the new values fetched
+            if (!MainActivity.computingRecyclerView){
+                ValuesUpdated = false;
+                addDataToRecyclerList();
+            }
+
             Log.d(TAG, "getData: Currency Values were Fetched successfully");
-
-        TaskList.clear();
-
+        }
 
     }
 
